@@ -1,0 +1,19 @@
+<script>
+const ws = new WebSocket("ws://localhost:8080/ws");
+const pc = new RTCPeerConnection();
+const dc = pc.createDataChannel("chat");
+
+dc.onopen = () => dc.send("Halo server");
+dc.onmessage = e => console.log(e.data);
+
+pc.onicecandidate = e => {
+  if (e.candidate) ws.send(JSON.stringify(e.candidate));
+};
+
+ws.onmessage = async e => {
+  await pc.setRemoteDescription(JSON.parse(e.data));
+};
+
+pc.createOffer().then(o => pc.setLocalDescription(o))
+.then(() => ws.send(JSON.stringify(pc.localDescription)));
+</script>
